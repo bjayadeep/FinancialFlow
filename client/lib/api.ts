@@ -1,6 +1,6 @@
 import { clearTokens, getAccessToken, getRefreshToken, saveAccessToken } from "@/lib/auth"
 
-const BASE_URL = process.env.VITE_API_URL || "http://localhost:5000"
+const BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000"
 
 type RequestBody = unknown
 
