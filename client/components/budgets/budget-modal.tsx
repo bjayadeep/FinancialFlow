@@ -18,7 +18,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { useCurrency } from "@/lib/currency"
 import type { Budget, BudgetFormData } from "@/app/budgets/page"
 
 interface BudgetModalProps {
@@ -59,7 +58,6 @@ const defaultBudgetMonth = "5"
 const defaultBudgetYear = "2026"
 
 export function BudgetModal({ open, onOpenChange, budget, initialData, onSave }: BudgetModalProps) {
-  const { currency } = useCurrency()
   const [category, setCategory] = useState("")
   const [limit, setLimit] = useState("")
   const [month, setMonth] = useState("")
@@ -145,7 +143,7 @@ export function BudgetModal({ open, onOpenChange, budget, initialData, onSave }:
               </Label>
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  {currency === "INR" ? "₹" : "$"}
+                  ₹
                 </span>
                 <Input
                   id="limit"

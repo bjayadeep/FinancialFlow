@@ -52,6 +52,7 @@ export const budgetAdvisor = async (userId: string): Promise<BudgetSuggestion[]>
         category: true,
         account: true,
         type: true,
+        currency: true,
       },
     }),
     prisma.budget.findMany({
@@ -74,6 +75,7 @@ export const budgetAdvisor = async (userId: string): Promise<BudgetSuggestion[]>
 ${JSON.stringify(
   transactions.map((transaction) => ({
     amount: transaction.amount,
+    currency: transaction.currency,
     description: transaction.description,
     date: transaction.date.toISOString().split("T")[0],
     category: transaction.category,

@@ -67,6 +67,7 @@ export const getDashboard = async (request: Request, response: Response) => {
         category: true,
         account: true,
         amount: true,
+        currency: true,
         type: true,
       },
     }),
@@ -161,6 +162,7 @@ export const getDashboard = async (request: Request, response: Response) => {
         category: transaction.category,
         account: transaction.account,
         amount: transaction.amount,
+        currency: transaction.currency,
         type: transaction.type,
       })),
       budgetProgress: budgets.map((budget) => ({

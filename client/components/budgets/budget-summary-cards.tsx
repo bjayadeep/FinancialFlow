@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from "@/components/ui/card"
 import { Target, TrendingDown, Wallet } from "lucide-react"
-import { formatCurrency, useCurrency } from "@/lib/currency"
+import { convertAmount, formatCurrency, useCurrency } from "@/lib/currency"
 
 interface BudgetSummaryCardsProps {
   totalBudgeted: number
@@ -15,7 +15,11 @@ export function BudgetSummaryCards({
   totalSpent,
   remaining,
 }: BudgetSummaryCardsProps) {
-  const { currency } = useCurrency()
+  const { currency, exchangeRate } = useCurrency()
+  const toDisplayAmount = (amount: number) =>
+    currency === "USD" && exchangeRate
+      ? convertAmount(amount, "INR", "USD", exchangeRate)
+      : amount
   const cards = [
     {
       title: "Total Budgeted",
@@ -54,7 +58,7 @@ export function BudgetSummaryCards({
               <div>
                 <p className="text-sm text-muted-foreground">{card.title}</p>
                 <p className={`text-2xl font-semibold ${card.color}`}>
-                  {formatCurrency(card.value, currency)}
+                  {formatCurrency(toDisplayAmount(card.value), currency)}
                 </p>
               </div>
             </div>

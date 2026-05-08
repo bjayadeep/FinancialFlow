@@ -14,6 +14,8 @@ interface ParsedTransaction {
   type: "income" | "expense";
 }
 
+const currencySchema = z.enum(["INR", "USD"]).default("INR");
+
 const getUserId = (request: Request, response: Response) => {
   if (!request.userId) {
     response.status(401).json({ error: "Authentication is required" });
@@ -54,7 +56,7 @@ const getStringCell = (row: Record<string, unknown>, column: string) => {
 
 const parseAmount = (value: string) => {
   const isParenthesizedNegative = /^\(.*\)$/.test(value.trim());
-  const numericValue = Number(value.replace(/[$,\s()]/g, ""));
+  const numericValue = Number(value.replace(/[$₹,\s()]/g, ""));
 
   if (!Number.isFinite(numericValue)) {
     return undefined;
@@ -124,6 +126,7 @@ export const importCsv = async (request: Request, response: Response) => {
   }
 
   try {
+    const currency = currencySchema.parse(request.body.currency);
     const rows = z.array(csvRecordSchema).parse(
       parse(request.file.buffer, {
         columns: true,
@@ -152,6 +155,7 @@ export const importCsv = async (request: Request, response: Response) => {
       date: transaction.date,
       description: transaction.description,
       amount: transaction.amount,
+      currency,
       account: transaction.account,
       type: transaction.type,
       category: categorizedTransactions[index]?.category ?? "Other",

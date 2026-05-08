@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/select"
 import { Upload, FileText, CheckCircle2, ArrowRight } from "lucide-react"
 import { postForm } from "@/lib/api"
-import { formatCurrency, useCurrency } from "@/lib/currency"
+import { formatCurrency, type CurrencyCode } from "@/lib/currency"
 
 interface ImportModalProps {
   open: boolean
@@ -58,8 +58,8 @@ const downloadSampleCsv = () => {
 }
 
 export function ImportModal({ open, onOpenChange, onImported }: ImportModalProps) {
-  const { currency } = useCurrency()
   const [step, setStep] = useState<Step>("upload")
+  const [currency, setCurrency] = useState<CurrencyCode>("INR")
   const [isDragging, setIsDragging] = useState(false)
   const [file, setFile] = useState<File | null>(null)
   const [isImporting, setIsImporting] = useState(false)
@@ -112,6 +112,7 @@ export function ImportModal({ open, onOpenChange, onImported }: ImportModalProps
     try {
       const formData = new FormData()
       formData.append("file", file)
+      formData.append("currency", currency)
 
       const response = await postForm<{
         imported: number
@@ -133,6 +134,7 @@ export function ImportModal({ open, onOpenChange, onImported }: ImportModalProps
     setFile(null)
     setError("")
     setImportedCount(0)
+    setCurrency("INR")
     setIsImporting(false)
     onOpenChange(false)
   }
@@ -159,6 +161,27 @@ export function ImportModal({ open, onOpenChange, onImported }: ImportModalProps
         {/* Upload Step */}
         {step === "upload" && (
           <div className="space-y-3">
+            <div className="rounded-lg border border-border bg-muted/30 p-4">
+              <p className="mb-3 text-sm font-medium text-foreground">
+                What currency are these transactions in?
+              </p>
+              <div className="inline-flex rounded-lg border border-border bg-background p-1">
+                {(["INR", "USD"] as CurrencyCode[]).map((option) => (
+                  <button
+                    key={option}
+                    type="button"
+                    onClick={() => setCurrency(option)}
+                    className={`rounded-md px-3 py-1.5 text-sm font-medium transition-colors ${
+                      currency === option
+                        ? "bg-emerald-500 text-zinc-950"
+                        : "text-muted-foreground hover:bg-muted hover:text-foreground"
+                    }`}
+                  >
+                    {option === "INR" ? "₹ INR" : "$ USD"}
+                  </button>
+                ))}
+              </div>
+            </div>
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}

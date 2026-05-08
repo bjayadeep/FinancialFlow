@@ -19,6 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { cn } from "@/lib/utils"
+import type { CurrencyCode } from "@/lib/currency"
 import type { Transaction } from "@/app/transactions/page"
 
 interface TransactionSheetProps {
@@ -35,6 +37,7 @@ export interface TransactionFormData {
   category: string
   account: string
   type: "income" | "expense"
+  currency: CurrencyCode
 }
 
 const categories = [
@@ -64,6 +67,7 @@ export function TransactionSheet({
     category: "",
     account: "",
     type: "expense" as "income" | "expense",
+    currency: "INR" as CurrencyCode,
     notes: "",
   })
   const [error, setError] = useState("")
@@ -78,6 +82,7 @@ export function TransactionSheet({
         category: transaction.category,
         account: transaction.account,
         type: transaction.type,
+        currency: transaction.currency,
         notes: "",
       })
     } else {
@@ -88,6 +93,7 @@ export function TransactionSheet({
         category: "",
         account: "",
         type: "expense",
+        currency: "INR",
         notes: "",
       })
     }
@@ -108,6 +114,7 @@ export function TransactionSheet({
         category: formData.category,
         account: formData.account,
         type: formData.type,
+        currency: formData.currency,
       })
       onOpenChange(false)
     } catch (caughtError) {
@@ -134,19 +141,39 @@ export function TransactionSheet({
         <form onSubmit={handleSubmit} className="grid gap-5 py-2 sm:grid-cols-2">
           <div className="space-y-2">
             <Label htmlFor="amount" className="text-zinc-300">Amount</Label>
-            <Input
-              id="amount"
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              value={formData.amount}
-              onChange={(event) =>
-                setFormData({ ...formData, amount: event.target.value })
-              }
-              required
-              min="0.01"
-              className={fieldClassName}
-            />
+            <div className="flex gap-2">
+              <div className="inline-flex rounded-lg border border-zinc-700 bg-zinc-800 p-1">
+                {(["INR", "USD"] as CurrencyCode[]).map((currency) => (
+                  <button
+                    key={currency}
+                    type="button"
+                    onClick={() => setFormData({ ...formData, currency })}
+                    className={cn(
+                      "h-9 w-10 rounded-md text-sm font-semibold transition-colors",
+                      formData.currency === currency
+                        ? "bg-emerald-500 text-zinc-950"
+                        : "text-zinc-400 hover:bg-zinc-700 hover:text-white",
+                    )}
+                    aria-label={`Use ${currency}`}
+                  >
+                    {currency === "INR" ? "₹" : "$"}
+                  </button>
+                ))}
+              </div>
+              <Input
+                id="amount"
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={formData.amount}
+                onChange={(event) =>
+                  setFormData({ ...formData, amount: event.target.value })
+                }
+                required
+                min="0.01"
+                className={fieldClassName}
+              />
+            </div>
           </div>
 
           <div className="space-y-2">

@@ -4,7 +4,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Pencil, Trash2 } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { formatCurrency, useCurrency } from "@/lib/currency"
+import { convertAmount, formatCurrency, useCurrency } from "@/lib/currency"
 import type { Budget } from "@/app/budgets/page"
 
 interface BudgetGridProps {
@@ -34,7 +34,11 @@ const getDaysRemaining = (month: number, year: number) => {
 }
 
 export function BudgetGrid({ budgets, onEdit, onDelete }: BudgetGridProps) {
-  const { currency } = useCurrency()
+  const { currency, exchangeRate } = useCurrency()
+  const toDisplayAmount = (amount: number) =>
+    currency === "USD" && exchangeRate
+      ? convertAmount(amount, "INR", "USD", exchangeRate)
+      : amount
 
   if (budgets.length === 0) {
     return (
@@ -71,7 +75,8 @@ export function BudgetGrid({ budgets, onEdit, onDelete }: BudgetGridProps) {
                     {formatBudgetMonth(budget.month, budget.year)}
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    {formatCurrency(budget.spent, currency)} of {formatCurrency(budget.limit, currency)}
+                    {formatCurrency(toDisplayAmount(budget.spent), currency)} of{" "}
+                    {formatCurrency(toDisplayAmount(budget.limit), currency)}
                   </p>
                 </div>
                 <div className="flex shrink-0 gap-1">

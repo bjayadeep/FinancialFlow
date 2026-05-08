@@ -3,7 +3,7 @@
 import { Checkbox } from "@/components/ui/checkbox"
 import { Button } from "@/components/ui/button"
 import { Bot, Pencil, Trash2, ChevronLeft, ChevronRight } from "lucide-react"
-import { formatCurrency, useCurrency } from "@/lib/currency"
+import { formatCurrency } from "@/lib/currency"
 import type { Transaction } from "@/app/transactions/page"
 
 const categoryColors: Record<string, string> = {
@@ -42,7 +42,6 @@ export function TransactionsTable({
   totalCount,
   onPageChange,
 }: TransactionsTableProps) {
-  const { currency } = useCurrency()
   const allSelected =
     transactions.length > 0 &&
     transactions.every((t) => selectedIds.includes(t.id))
@@ -83,8 +82,8 @@ export function TransactionsTable({
   const formatAmount = (transaction: Transaction) => {
     const amount = transaction.type === "expense" ? -transaction.amount : transaction.amount
     return amount >= 0
-      ? `+${formatCurrency(Math.abs(amount), currency)}`
-      : `-${formatCurrency(Math.abs(amount), currency)}`
+      ? `+${formatCurrency(Math.abs(amount), transaction.currency)}`
+      : `-${formatCurrency(Math.abs(amount), transaction.currency)}`
   }
 
   return (

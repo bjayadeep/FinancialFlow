@@ -4,9 +4,11 @@ import { z } from "zod";
 import { prisma } from "../lib/prisma";
 
 const transactionTypeSchema = z.enum(["income", "expense"]);
+const currencySchema = z.enum(["INR", "USD"]).default("INR");
 
 const transactionSchema = z.object({
   amount: z.coerce.number().positive("Amount must be greater than 0"),
+  currency: currencySchema,
   description: z.string().trim().min(1, "Description is required"),
   date: z.coerce.date(),
   category: z.string().trim().min(1, "Category is required"),

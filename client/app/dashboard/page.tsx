@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import { ProtectedRoute } from "@/components/protected-route"
 import { Sidebar } from "@/components/dashboard/sidebar"
 import { StatCards } from "@/components/dashboard/stat-cards"
@@ -10,6 +10,7 @@ import { BudgetProgress } from "@/components/dashboard/budget-progress"
 import { TransactionsTable } from "@/components/dashboard/transactions-table"
 import { CurrencySelector } from "@/components/dashboard/currency-selector"
 import { get } from "@/lib/api"
+import { convertAmount, type CurrencyCode, useCurrency } from "@/lib/currency"
 
 interface DashboardData {
   totalBalance: number
@@ -33,6 +34,7 @@ interface DashboardData {
     category: string
     account: string
     amount: number
+    currency: CurrencyCode
     type: "income" | "expense"
   }[]
   budgetProgress: {
@@ -50,6 +52,7 @@ interface DashboardResponse {
 }
 
 export default function DashboardPage() {
+  const { currency, exchangeRate } = useCurrency()
   const [dashboardData, setDashboardData] = useState<DashboardData | null>(null)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(true)
@@ -71,6 +74,49 @@ export default function DashboardPage() {
 
     loadDashboard()
   }, [])
+
+  const displayedDashboardData = useMemo(() => {
+    if (!dashboardData) {
+      return null
+    }
+
+    if (currency === "INR") {
+      return dashboardData
+    }
+
+    if (!exchangeRate) {
+      return null
+    }
+
+    const convertInrToSelectedCurrency = (amount: number) =>
+      convertAmount(amount, "INR", currency, exchangeRate)
+
+    return {
+      ...dashboardData,
+      totalBalance: convertInrToSelectedCurrency(dashboardData.totalBalance),
+      monthlyIncome: convertInrToSelectedCurrency(dashboardData.monthlyIncome),
+      monthlyExpenses: convertInrToSelectedCurrency(dashboardData.monthlyExpenses),
+      spendingByCategory: dashboardData.spendingByCategory.map((item) => ({
+        ...item,
+        amount: convertInrToSelectedCurrency(item.amount),
+      })),
+      monthlyTrend: dashboardData.monthlyTrend.map((item) => ({
+        ...item,
+        income: convertInrToSelectedCurrency(item.income),
+        expenses: convertInrToSelectedCurrency(item.expenses),
+      })),
+      recentTransactions: dashboardData.recentTransactions.map((transaction) => ({
+        ...transaction,
+        amount: convertAmount(transaction.amount, transaction.currency, currency, exchangeRate),
+        currency,
+      })),
+      budgetProgress: dashboardData.budgetProgress.map((budget) => ({
+        ...budget,
+        spent: convertInrToSelectedCurrency(budget.spent),
+        limit: convertInrToSelectedCurrency(budget.limit),
+      })),
+    }
+  }, [currency, dashboardData, exchangeRate])
 
   return (
     <ProtectedRoute>
@@ -97,7 +143,7 @@ export default function DashboardPage() {
               </p>
             )}
 
-            {isLoading || !dashboardData ? (
+            {isLoading || !displayedDashboardData ? (
               <div className="rounded-xl border border-border bg-card p-8 text-sm text-muted-foreground">
                 Loading dashboard...
               </div>
@@ -105,24 +151,24 @@ export default function DashboardPage() {
               <>
                 <div className="mb-6">
                   <StatCards
-                    totalBalance={dashboardData.totalBalance}
-                    monthlyIncome={dashboardData.monthlyIncome}
-                    monthlyExpenses={dashboardData.monthlyExpenses}
-                    mostRecentMonth={dashboardData.mostRecentMonth}
-                    savingsRate={dashboardData.savingsRate}
+                    totalBalance={displayedDashboardData.totalBalance}
+                    monthlyIncome={displayedDashboardData.monthlyIncome}
+                    monthlyExpenses={displayedDashboardData.monthlyExpenses}
+                    mostRecentMonth={displayedDashboardData.mostRecentMonth}
+                    savingsRate={displayedDashboardData.savingsRate}
                   />
                 </div>
 
                 <div className="mb-6">
-                  <IncomeExpenseChart data={dashboardData.monthlyTrend} />
+                  <IncomeExpenseChart data={displayedDashboardData.monthlyTrend} />
                 </div>
 
                 <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-                  <SpendingChart data={dashboardData.spendingByCategory} />
-                  <BudgetProgress items={dashboardData.budgetProgress} />
+                  <SpendingChart data={displayedDashboardData.spendingByCategory} />
+                  <BudgetProgress items={displayedDashboardData.budgetProgress} />
                 </div>
 
-                <TransactionsTable transactions={dashboardData.recentTransactions} />
+                <TransactionsTable transactions={displayedDashboardData.recentTransactions} />
               </>
             )}
           </div>

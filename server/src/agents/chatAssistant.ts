@@ -15,9 +15,9 @@ const ensureGroqApiKey = () => {
 };
 
 const formatCurrency = (amount: number) => {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("en-IN", {
     style: "currency",
-    currency: "USD",
+    currency: "INR",
   }).format(amount);
 };
 
@@ -35,6 +35,7 @@ const buildFinancialContext = async (userId: string) => {
         category: true,
         account: true,
         type: true,
+        currency: true,
       },
     }),
     prisma.budget.findMany({
@@ -72,7 +73,7 @@ const buildFinancialContext = async (userId: string) => {
       (transaction) =>
         `- ${transaction.date.toISOString().split("T")[0]} | ${transaction.type} | ${transaction.category} | ${formatCurrency(
           transaction.amount,
-        )} | ${transaction.description} | ${transaction.account}`,
+        )} ${transaction.currency} | ${transaction.description} | ${transaction.account}`,
     )
     .join("\n");
 

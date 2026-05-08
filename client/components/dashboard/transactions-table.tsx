@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
-import { formatCurrency, useCurrency } from "@/lib/currency"
+import { formatCurrency } from "@/lib/currency"
 
 interface Transaction {
   id: string
@@ -20,6 +20,7 @@ interface Transaction {
   category: string
   account: string
   amount: number
+  currency: "INR" | "USD"
   type: "income" | "expense"
 }
 
@@ -44,8 +45,6 @@ const formatDate = (date: string) =>
   })
 
 export function TransactionsTable({ transactions }: TransactionsTableProps) {
-  const { currency } = useCurrency()
-
   return (
     <Card className="bg-card border-border">
       <CardHeader className="pb-2">
@@ -107,9 +106,9 @@ export function TransactionsTable({ transactions }: TransactionsTableProps) {
                       ? "text-emerald-500"
                       : "text-red-500"
                   )}
-                >
+                  >
                   {transaction.type === "income" ? "+" : "-"}
-                  {formatCurrency(transaction.amount, currency)}
+                  {formatCurrency(transaction.amount, transaction.currency)}
                 </TableCell>
               </TableRow>
             ))}

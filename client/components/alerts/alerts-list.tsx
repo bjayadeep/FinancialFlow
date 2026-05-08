@@ -10,7 +10,7 @@ import {
   ShieldCheck,
   XCircle,
 } from "lucide-react"
-import { formatCurrency, useCurrency } from "@/lib/currency"
+import { convertAmount, formatCurrency, useCurrency } from "@/lib/currency"
 import type { Alert } from "@/app/alerts/page"
 
 interface AlertsListProps {
@@ -40,7 +40,11 @@ const severityConfig = {
 }
 
 export function AlertsList({ alerts, onUpdateAlert }: AlertsListProps) {
-  const { currency } = useCurrency()
+  const { currency, exchangeRate } = useCurrency()
+  const toDisplayAmount = (amount: number) =>
+    currency === "USD" && exchangeRate
+      ? convertAmount(amount, "INR", "USD", exchangeRate)
+      : amount
 
   if (alerts.length === 0) {
     return (
@@ -150,7 +154,7 @@ export function AlertsList({ alerts, onUpdateAlert }: AlertsListProps) {
                           alert.amount > 100 ? "text-red-400" : "text-foreground"
                         )}
                       >
-                        {formatCurrency(alert.amount, currency)}
+                        {formatCurrency(toDisplayAmount(alert.amount), currency)}
                       </span>
                     )}
                     {alert.date && (

@@ -21,6 +21,7 @@ export type Transaction = {
   category: string
   account: string
   amount: number
+  currency: "INR" | "USD"
   type: "income" | "expense"
   aiTagged: boolean
 }
@@ -37,7 +38,7 @@ interface TransactionResponse {
 }
 
 const pageSize = 8
-const csvHeaders = ["Date", "Description", "Category", "Account", "Type", "Amount"]
+const csvHeaders = ["Date", "Description", "Category", "Account", "Type", "Amount", "Currency"]
 
 const escapeCsvValue = (value: string | number) => {
   const stringValue = String(value)
@@ -60,6 +61,7 @@ const buildTransactionsCsv = (items: Transaction[]) =>
         transaction.account,
         transaction.type,
         transaction.amount,
+        transaction.currency,
       ]
         .map(escapeCsvValue)
         .join(","),
